@@ -7,12 +7,16 @@
           <i class="iconfont icon-person"></i>
         </div>
         <div class="user-info">
-          <p class="user-info-top">登录/注册</p>
-          <p>
-                <span class="user-icon">
-                  <i class="iconfont icon-shouji icon-mobile"></i>
-                </span>
-            <span class="icon-mobile-number">暂无绑定手机号</span>
+          <p class="user-info-top" v-if="!user.phone">
+            {{user.name?user.name :`登录/注册`}}
+          </p>
+          <p  v-if="!user.name">
+           <span class="user-icon">
+             <i class="iconfont icon-shouji icon-mobile"></i>
+           </span>
+            <span class="icon-mobile-number">
+              {{user.phone ? user.phone :`暂无绑定手机号`}}
+            </span>
           </p>
         </div>
         <span class="arrow">
@@ -88,13 +92,33 @@
         </div>
       </a>
     </section>
+    <section class="profile_my_order border-1px" v-if="user._id">
+      <mt-button type="danger" style="width: 100%" @click="logout">退出登录</mt-button>
+    </section>
   </section>
 </template>
 
 <script>
-    export default {
-        name: "profile"
+  import {mapState} from "vuex"
+  import MtButton from "mint-ui/packages/button/src/button";
+  import {MessageBox} from "mint-ui"
+  export default {
+    components: {MtButton},
+    name: "profile",
+    computed: {
+      ...mapState(["user"])
+    },
+    methods:{
+      logout(){
+        MessageBox.confirm("确定要退出吗？").then(
+          action => {
+            //发送登出的请求
+            this.$store.dispatch("logout")
+          },
+        )
+      }
     }
+  }
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
@@ -197,12 +221,12 @@
         display flex
         align-items center
         padding-left 15px
-        >span
+        > span
           display flex
           align-items center
           width 20px
           height 20px
-          >.iconfont
+          > .iconfont
             margin-left -10px
             font-size 30px
           .icon-order-s

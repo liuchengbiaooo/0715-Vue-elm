@@ -1,7 +1,7 @@
 <template>
   <section class="msite">
     <!--首页头部-->
-    <top-header title="昌平区北七家宏福科技园(337省道北)">
+    <top-header :title="address.name">
       <span class="header_search" slot="left">
          <i class="iconfont icon-sousuo"></i>
       </span>
@@ -10,116 +10,28 @@
       </span>
     </top-header>
 
-
     <!--首页导航-->
     <nav class="msite_nav">
-      <div class="swiper-container">
+      <div class="swiper-container" v-if="categorys.length>0">
         <div class="swiper-wrapper">
-          <div class="swiper-slide">
-            <a href="javascript:" class="link_to_food">
+          <div class="swiper-slide" v-for="(category,index) in categorysArr" :key="index">
+            <a href="javascript:" class="link_to_food" v-for="(c,index) in category" :key="index">
               <div class="food_container">
-                <img src="./images/nav/1.jpg">
+                <img :src="'https://fuss10.elemecdn.com'+c.image_url">
               </div>
-              <span>甜品饮品</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/2.jpg">
-              </div>
-              <span>商超便利</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/3.jpg">
-              </div>
-              <span>美食</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/4.jpg">
-              </div>
-              <span>简餐</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/5.jpg">
-              </div>
-              <span>新店特惠</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/6.jpg">
-              </div>
-              <span>准时达</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/7.jpg">
-              </div>
-              <span>预订早餐</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/8.jpg">
-              </div>
-              <span>土豪推荐</span>
-            </a>
-          </div>
-          <div class="swiper-slide">
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/9.jpg">
-              </div>
-              <span>甜品饮品</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/10.jpg">
-              </div>
-              <span>商超便利</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/11.jpg">
-              </div>
-              <span>美食</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/12.jpg">
-              </div>
-              <span>简餐</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/13.jpg">
-              </div>
-              <span>新店特惠</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/14.jpg">
-              </div>
-              <span>准时达</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/1.jpg">
-              </div>
-              <span>预订早餐</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/2.jpg">
-              </div>
-              <span>土豪推荐</span>
+              <span>{{c.title}}</span>
             </a>
           </div>
         </div>
         <!-- Add Pagination -->
         <div class="swiper-pagination"></div>
       </div>
+      <div v-else>
+        <img src="./images/msite_back.svg" alt="msitesss"/>
+      </div>
     </nav>
+
+
     <!--首页附近商家-->
     <div class="msite_shop_list">
       <div class="shop_header">
@@ -132,13 +44,55 @@
 </template>
 
 <script>
+  import 'swiper/dist/css/swiper.min.css'
+  import Swiper from 'swiper'
   import ShopList from "../../components/ShopList/ShopList.vue"
+  import {mapState} from "vuex"
   export default {
     name: "msite",
+    mounted() {
+      this.$store.dispatch("getAddress")
+      this.$store.dispatch("getCategorys")
+    },
+    computed: {
+      ...mapState(["address", "categorys"]),
+
+      categorysArr() {
+        const {categorys} = this
+        const categoryDig = [] // 定义最大的双重数组
+        let arr = [] //定义大数组里面的小数组
+        categorys.forEach((c) => {
+
+          if (arr.length === 0) {
+            categoryDig.push(arr)  //如果arr的值小于0 将他放入 双重数组中
+          }
+          arr.push(c)
+          if (arr.length === 8) {  //当arr里面的值到达一定数量后，重新清空放入新数组
+            arr = []
+          }
+        })
+        return categoryDig
+      },
+    },
     components: {
       ShopList
+    },
+    watch:{
+      // 注意: 更新状态数据==>调用监视回调 ==> 异步更新界面
+      categorys () { // categorys状态数据更新了: [] ==> [...]
+        // 将回调延迟到下次 DOM 更新循环之后执行。在修改数据之后立即使用它
+        this.$nextTick(() => {
+          //
+          new Swiper('.swiper-container', {
+            loop: true, // 循环模式选项
+            // 如果需要分页器
+            pagination: {
+              el: '.swiper-pagination',
+            },
+          })
+        })
+      }
     }
-
   }
 </script>
 
